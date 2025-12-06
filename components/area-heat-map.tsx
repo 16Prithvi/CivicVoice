@@ -178,8 +178,8 @@ export function AreaHeatMap({ reports }: AreaHeatMapProps) {
               layout="vertical"
               margin={{ top: 5, right: 10, left: 100, bottom: 5 }}
               onClick={(data) => {
-                if (data && data.activePayload && data.activePayload[0]) {
-                  handleBarClick(data.activePayload[0].payload);
+                if (data && Array.isArray((data as any).activePayload) && (data as any).activePayload[0]) {
+                  handleBarClick((data as any).activePayload[0].payload);
                 }
               }}
             >

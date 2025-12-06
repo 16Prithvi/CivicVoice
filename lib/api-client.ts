@@ -3,7 +3,7 @@ import { getAllReports, getReportById, createReport, updateReportStatus, deleteR
 import { getComments as getCommentsLocal, addComment as addCommentLocal, upvoteComment as upvoteCommentLocal } from './comments';
 import { getNotifications as getNotificationsLocal, markAsRead as markNotificationAsReadLocal, markAllAsRead as markAllNotificationsAsReadLocal } from './notifications';
 import { getUser } from './auth';
-import { Report, ReportStatus } from '@/types';
+import { ReportStatus } from '@/types';
 
 // ⚠️ BACKEND IS NOT CONNECTED - Frontend uses localStorage only
 // The backend server runs on port 3001 but is intentionally disconnected
@@ -26,8 +26,8 @@ export const authAPI = {
     const users = usersJson ? JSON.parse(usersJson) : [];
 
     // Check if user exists (case-insensitive)
-    const existingUser = users.find((u: any) => 
-      u.email.toLowerCase() === email.toLowerCase() || 
+    const existingUser = users.find((u: any) =>
+      u.email.toLowerCase() === email.toLowerCase() ||
       u.username.toLowerCase() === username.toLowerCase()
     );
     if (existingUser) {
@@ -80,15 +80,15 @@ export const authAPI = {
 
     const USERS_KEY = "civicvoice_users";
     let usersJson = localStorage.getItem(USERS_KEY);
-    
+
     // If no users exist or invalid data, reinitialize
     if (!usersJson || usersJson === "null" || usersJson === "[]") {
       initializeDataStore();
       usersJson = localStorage.getItem(USERS_KEY);
     }
-    
+
     let users = usersJson ? JSON.parse(usersJson) : [];
-    
+
     // Ensure we have at least demo users
     if (!Array.isArray(users) || users.length === 0) {
       initializeDataStore();
@@ -104,7 +104,7 @@ export const authAPI = {
     if (!user) {
       throw new Error("User not found. Please register first or use demo@example.com / admin@example.com");
     }
-    
+
     if (user.password !== password) {
       throw new Error("Invalid password. Try: demo123 (for demo@example.com) or admin123 (for admin@example.com)");
     }
@@ -149,7 +149,7 @@ export const authAPI = {
 export const reportsAPI = {
   getAll: async (filters?: { category?: string; status?: string; userId?: string }) => {
     let reports = getAllReports();
-    
+
     // Apply filters
     if (filters?.userId) {
       reports = getReportsByUser(filters.userId);
@@ -160,7 +160,7 @@ export const reportsAPI = {
     if (filters?.status && filters.status !== "all") {
       reports = reports.filter((r) => r.status === filters.status);
     }
-    
+
     return { reports };
   },
 
@@ -182,7 +182,7 @@ export const reportsAPI = {
     if (!existingReport) {
       throw new Error('Report not found');
     }
-    
+
     // Update report (we'll create a new one with updated data)
     const updatedReport = {
       ...existingReport,
@@ -190,7 +190,7 @@ export const reportsAPI = {
       id,
       updatedAt: new Date().toISOString(),
     };
-    
+
     // Delete old and create new
     deleteReportLocal(id);
     const reports = getAllReports();
@@ -198,7 +198,7 @@ export const reportsAPI = {
     if (typeof window !== 'undefined') {
       localStorage.setItem('civicvoice_reports', JSON.stringify(reports));
     }
-    
+
     return { report: updatedReport };
   },
 
@@ -228,14 +228,14 @@ export const commentsAPI = {
     if (!user) {
       throw new Error('Not authenticated');
     }
-    
+
     const comment = addCommentLocal({
       reportId,
       userId: user.id,
       username: user.username,
       content,
     });
-    
+
     return { comment };
   },
 
@@ -244,12 +244,12 @@ export const commentsAPI = {
     if (!user) {
       throw new Error('Not authenticated');
     }
-    
+
     const comment = upvoteCommentLocal(id, user.id);
     if (!comment) {
       throw new Error('Comment not found');
     }
-    
+
     return { comment };
   },
 };
@@ -261,7 +261,7 @@ export const notificationsAPI = {
     if (!user) {
       return { notifications: [] };
     }
-    
+
     const notifications = getNotificationsLocal(user.id);
     return { notifications };
   },
@@ -276,7 +276,7 @@ export const notificationsAPI = {
     if (!user) {
       throw new Error('Not authenticated');
     }
-    
+
     markAllNotificationsAsReadLocal(user.id);
     return { success: true };
   },

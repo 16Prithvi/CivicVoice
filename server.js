@@ -18,8 +18,8 @@ let reports = [
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'Backend is running!',
     timestamp: new Date().toISOString(),
     port: PORT
@@ -77,7 +77,7 @@ app.listen(PORT, () => {
   console.log(`📡 Port: ${PORT}`);
   console.log(`🌐 Health Check: http://localhost:${PORT}/api/health`);
   console.log(`📊 Stats: http://localhost:${PORT}/api/stats`);
-  
+
 });
 
 

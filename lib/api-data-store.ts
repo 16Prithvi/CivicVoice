@@ -1,29 +1,52 @@
-import { Report, ReportStatus, ReportCategory } from "@/types";
+import { Report, ReportStatus, ReportCategory, Comment } from "@/types";
 import { reportsAPI, commentsAPI, notificationsAPI, statsAPI } from "./api-client";
+
+// Define API response types
+interface ApiReport extends Omit<Report, 'location'> {
+  locationLat?: number;
+  locationLng?: number;
+  address?: string;
+  location?: {
+    lat: number;
+    lng: number;
+    address?: string;
+  };
+}
+
+interface ApiComment extends Omit<Comment, 'username'> {
+  user?: {
+    username: string;
+  };
+  username?: string;
+}
 
 // Reports Management
 export async function getAllReports(filters?: { category?: string; status?: string }): Promise<Report[]> {
   try {
     const response = await reportsAPI.getAll(filters);
-    return response.reports.map((r: any) => ({
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      category: r.category as ReportCategory,
-      subcategory: r.subcategory,
-      area: r.area,
-      status: r.status as ReportStatus,
-      imageUrl: r.imageUrl || undefined,
-      location: {
-        lat: r.locationLat || r.location?.lat || 0,
-        lng: r.locationLng || r.location?.lng || 0,
-        address: r.address || r.location?.address || undefined,
-      },
-      userId: r.userId,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      urgent: r.urgent || false,
-    }));
+    return (response.reports as ApiReport[]).map((r) => {
+      // Handle both location object and flat location properties
+      const location = r.location || {
+        lat: r.locationLat ?? 0,
+        lng: r.locationLng ?? 0,
+        address: r.address
+      };
+      return {
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        category: r.category as ReportCategory,
+        subcategory: r.subcategory,
+        area: r.area,
+        status: r.status as ReportStatus,
+        imageUrl: r.imageUrl || undefined,
+        location,
+        userId: r.userId,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        urgent: r.urgent || false,
+      };
+    });
   } catch (error) {
     console.error("Failed to fetch reports:", error);
     return [];
@@ -43,9 +66,9 @@ export async function getReportsByUser(userId: string): Promise<Report[]> {
       status: r.status as ReportStatus,
       imageUrl: r.imageUrl || undefined,
       location: {
-        lat: r.locationLat || r.location?.lat || 0,
-        lng: r.locationLng || r.location?.lng || 0,
-        address: r.address || r.location?.address || undefined,
+        lat: r.location?.lat ?? r.locationLat ?? 0,
+        lng: r.location?.lng ?? r.locationLng ?? 0,
+        address: r.location?.address ?? r.address
       },
       userId: r.userId,
       createdAt: r.createdAt,
@@ -70,11 +93,7 @@ export async function getReportById(id: string): Promise<Report | null> {
       subcategory: r.subcategory,
       status: r.status as ReportStatus,
       imageUrl: r.imageUrl || undefined,
-      location: {
-        lat: r.locationLat || r.location?.lat || 0,
-        lng: r.locationLng || r.location?.lng || 0,
-        address: r.address || r.location?.address || undefined,
-      },
+      location,
       userId: r.userId,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
@@ -143,11 +162,7 @@ export async function updateReportStatus(id: string, status: ReportStatus): Prom
       subcategory: r.subcategory,
       status: r.status,
       imageUrl: r.imageUrl || undefined,
-      location: {
-        lat: r.locationLat || r.location?.lat || 0,
-        lng: r.locationLng || r.location?.lng || 0,
-        address: r.address || r.location?.address || undefined,
-      },
+      location,
       userId: r.userId,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
@@ -195,14 +210,9 @@ export async function getStats() {
 export async function getComments(reportId: string) {
   try {
     const response = await commentsAPI.getByReport(reportId);
-    return response.comments.map((c: any) => ({
-      id: c.id,
-      reportId: c.reportId,
-      userId: c.userId,
-      username: c.user?.username || "Unknown",
-      content: c.content,
-      createdAt: c.createdAt,
-      upvotes: c.upvotes,
+    return (response.comments as ApiComment[]).map((c) => ({
+      ...c,
+      username: c.username || c.user?.username || "Unknown"
     }));
   } catch (error) {
     console.error("Failed to fetch comments:", error);

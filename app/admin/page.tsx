@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { isAuthenticated, isAdmin as checkIsAdmin, getUser } from "@/lib/auth";
 import { getAllReports as getAllReportsAPI, updateReportStatus as updateReportStatusAPI, getStats as getStatsAPI } from "@/lib/api-data-store";
-import { getAllReports, updateReportStatus, getStats } from "@/lib/data-store";
 import { Report, ReportStatus, ReportCategory } from "@/types";
 import { StatusChain } from "@/components/status-chain";
 import { formatDate, getCategoryColor } from "@/lib/utils";
@@ -16,7 +14,6 @@ import {
   CheckCircle2,
   X,
   Eye,
-  Filter,
   TrendingUp,
   Clock,
   FileText,
