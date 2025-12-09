@@ -47,22 +47,22 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2">
                 <Mail size={18} />
-                <span className="text-gray-300">support@civicvoice.com</span>
+                <span className="text-gray-300">prithviganiger@gmail.com</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Phone size={18} />
-                <span className="text-gray-300">+1 (555) 123-4567</span>
+                <span className="text-gray-300">+91 7338538735</span>
               </li>
               <li className="flex items-center space-x-2">
                 <MapPin size={18} />
-                <span className="text-gray-300">City Hall, Main Street</span>
+                <span className="text-gray-300">Hubli,Karnataka</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300">
-          <p>&copy; 2024 CivicVoice. Aligned with SDG 9 & SDG 11.</p>
+          <p>&copy; 2024 CivicVoice. Aligned with SDG 11.</p>
         </div>
       </div>
     </footer>

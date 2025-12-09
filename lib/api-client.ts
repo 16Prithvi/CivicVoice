@@ -1,7 +1,23 @@
 // Import localStorage-based functions
-import { getAllReports, getReportById, createReport, updateReportStatus, deleteReport as deleteReportLocal, getReportsByUser, getStats as getStatsLocal } from './data-store';
-import { getComments as getCommentsLocal, addComment as addCommentLocal, upvoteComment as upvoteCommentLocal } from './comments';
-import { getNotifications as getNotificationsLocal, markAsRead as markNotificationAsReadLocal, markAllAsRead as markAllNotificationsAsReadLocal } from './notifications';
+import {
+  getAllReports,
+  getReportById,
+  createReport,
+  updateReportStatus,
+  deleteReport as deleteReportLocal,
+  getReportsByUser,
+  getStats as getStatsLocal,
+} from './data-store';
+import {
+  getComments as getCommentsLocal,
+  addComment as addCommentLocal,
+  upvoteComment as upvoteCommentLocal,
+} from './comments';
+import {
+  getNotifications as getNotificationsLocal,
+  markAsRead as markNotificationAsReadLocal,
+  markAllAsRead as markAllNotificationsAsReadLocal,
+} from './notifications';
 import { getUser } from './auth';
 import { ReportStatus } from '@/types';
 
@@ -11,27 +27,34 @@ import { ReportStatus } from '@/types';
 
 // Auth APIs - Using local storage instead of backend
 export const authAPI = {
-  register: async (username: string, email: string, password: string, isAdmin?: boolean, adminPost?: string): Promise<{ token: string; user: any }> => {
+  register: async (
+    username: string,
+    email: string,
+    password: string,
+    isAdmin?: boolean,
+    adminPost?: string
+  ): Promise<{ token: string; user: any }> => {
     // Check if user already exists in local storage
-    if (typeof window === "undefined") {
-      throw new Error("Not available on server");
+    if (typeof window === 'undefined') {
+      throw new Error('Not available on server');
     }
 
     // Ensure data store is initialized
     const { initializeDataStore } = await import('./data-store');
     initializeDataStore();
 
-    const USERS_KEY = "civicvoice_users";
+    const USERS_KEY = 'civicvoice_users';
     const usersJson = localStorage.getItem(USERS_KEY);
     const users = usersJson ? JSON.parse(usersJson) : [];
 
     // Check if user exists (case-insensitive)
-    const existingUser = users.find((u: any) =>
-      u.email.toLowerCase() === email.toLowerCase() ||
-      u.username.toLowerCase() === username.toLowerCase()
+    const existingUser = users.find(
+      (u: any) =>
+        u.email.toLowerCase() === email.toLowerCase() ||
+        u.username.toLowerCase() === username.toLowerCase()
     );
     if (existingUser) {
-      throw new Error("Username or email already exists");
+      throw new Error('Username or email already exists');
     }
 
     // Create new user
@@ -40,7 +63,7 @@ export const authAPI = {
       username,
       email,
       password, // In real app, this would be hashed, but for frontend-only we store it as-is
-      role: isAdmin ? "admin" : "citizen",
+      role: isAdmin ? 'admin' : 'citizen',
       adminPost: isAdmin ? adminPost : undefined,
     };
 
@@ -70,19 +93,19 @@ export const authAPI = {
   },
 
   login: async (email: string, password: string): Promise<{ token: string; user: any }> => {
-    if (typeof window === "undefined") {
-      throw new Error("Not available on server");
+    if (typeof window === 'undefined') {
+      throw new Error('Not available on server');
     }
 
     // Ensure data store is initialized
     const { initializeDataStore } = await import('./data-store');
     initializeDataStore();
 
-    const USERS_KEY = "civicvoice_users";
+    const USERS_KEY = 'civicvoice_users';
     let usersJson = localStorage.getItem(USERS_KEY);
 
     // If no users exist or invalid data, reinitialize
-    if (!usersJson || usersJson === "null" || usersJson === "[]") {
+    if (!usersJson || usersJson === 'null' || usersJson === '[]') {
       initializeDataStore();
       usersJson = localStorage.getItem(USERS_KEY);
     }
@@ -95,18 +118,22 @@ export const authAPI = {
       const freshJson = localStorage.getItem(USERS_KEY);
       users = freshJson ? JSON.parse(freshJson) : [];
       if (!Array.isArray(users) || users.length === 0) {
-        throw new Error("Unable to initialize users. Please refresh the page.");
+        throw new Error('Unable to initialize users. Please refresh the page.');
       }
     }
 
     // Find user by email (case-insensitive)
     const user = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
     if (!user) {
-      throw new Error("User not found. Please register first or use demo@example.com / admin@example.com");
+      throw new Error(
+        'User not found. Please register first or use demo@example.com / admin@example.com'
+      );
     }
 
     if (user.password !== password) {
-      throw new Error("Invalid password. Try: demo123 (for demo@example.com) or admin123 (for admin@example.com)");
+      throw new Error(
+        'Invalid password. Try: demo123 (for demo@example.com) or admin123 (for admin@example.com)'
+      );
     }
 
     // Create a simple token (just base64 encoded user info)
@@ -131,16 +158,16 @@ export const authAPI = {
 
   me: async (): Promise<{ user: any }> => {
     // Get user from token
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     if (!token) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated');
     }
 
     try {
       const decoded = JSON.parse(atob(token));
       return { user: decoded };
     } catch {
-      throw new Error("Invalid token");
+      throw new Error('Invalid token');
     }
   },
 };
@@ -154,10 +181,10 @@ export const reportsAPI = {
     if (filters?.userId) {
       reports = getReportsByUser(filters.userId);
     }
-    if (filters?.category && filters.category !== "all") {
+    if (filters?.category && filters.category !== 'all') {
       reports = reports.filter((r) => r.category === filters.category);
     }
-    if (filters?.status && filters.status !== "all") {
+    if (filters?.status && filters.status !== 'all') {
       reports = reports.filter((r) => r.status === filters.status);
     }
 
@@ -229,12 +256,16 @@ export const commentsAPI = {
       throw new Error('Not authenticated');
     }
 
-    const comment = addCommentLocal({
-      reportId,
-      userId: user.id,
-      username: user.username,
-      content,
-    });
+    // Username is not part of the typed parameter of addCommentLocal,
+    // so we keep it for runtime but bypass TS extra-property checks.
+    const comment = addCommentLocal(
+      {
+        reportId,
+        userId: user.id,
+        content,
+        username: user.username || 'Anonymous',
+      } as any
+    );
 
     return { comment };
   },
